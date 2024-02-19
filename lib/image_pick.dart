@@ -20,7 +20,9 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
   String imageName = '';
   List<ImageData> _imageDataList = [];
   TextEditingController nameController = TextEditingController();
+  TextEditingController updateNameController = TextEditingController();
   bool isLoading = false;
+
   void addDocument(String castImage, String castName) async {
     DocumentReference movieDocument = FirebaseFirestore.instance.collection(widget.selectId).doc(widget.movieId);
 
@@ -36,16 +38,12 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
           'cast_name': castName,
         });
         await movieDocument.update({"Cast": castData});
+        nameController.clear();
       }
     } catch (e) {
       print('Error adding document: $e');
     }
   }
-
-
-
-
-
 
   @override
   void initState() {
@@ -64,7 +62,7 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
       }
     }
   }
-
+  
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -89,7 +87,7 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
       // addDocument(imageUrl, imageName);
     }
   }
-
+  
   Future<void> _showNameInputDialog(String imagePath) async {
     String imageName = '';
 
@@ -124,11 +122,100 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
     );
 
   }
+  
+  Future<void> _updatepickImage(index,String name) async {
+    updateNameController.text = name;
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+      final Reference storageReference = FirebaseStorage.instance
+          .ref()
+          .child('movie_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      setState(() {
+        isLoading =true;
+      });
+      await storageReference.putFile(imageFile);
+
+      final String imageUrl = await storageReference.getDownloadURL();
+      setState(() {
+        isLoading =false;
+      });
+      _updateshowNameInputDialog(index,imageUrl);
+      // addDocument(imageUrl, imageName);
+    }
+  }
+  
+  Future<void> _updateshowNameInputDialog(index,String imagePath) async {
+    String imageName = '';
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Enter Image Name'),
+          content: TextField(
+            controller: updateNameController,
+            decoration: InputDecoration(labelText: 'Image Name'),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                _updateimage(index,imagePath, updateNameController.text.trim());
+                Navigator.pop(context);
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+  }
+
+  Future<void> _deleteshowNameInputDialog(index) async {
+    String imageName = '';
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete cast'),
+          content: Text("Are you sure you want delete this Cast?"),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                _deleteImage(index);
+                Navigator.pop(context);
+              },
+              child: Text('delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+  }
+
 
   void _deleteImage(int index) async {
     try {
       // Get a reference to the 'movies' collection
-      CollectionReference moviesCollection = FirebaseFirestore.instance.collection('movies');
+      CollectionReference moviesCollection = FirebaseFirestore.instance.collection(widget.selectId);
 
       // Get the document reference for the specific movie
       DocumentReference movieDocument = moviesCollection.doc(widget.movieId);
@@ -154,6 +241,38 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
       print('Error deleting data: $e');
     }
   }
+  void _updateimage(int index,castImage,castName) async {
+    try {
+      // Get a reference to the 'movies' collection
+      CollectionReference moviesCollection = FirebaseFirestore.instance.collection(widget.selectId);
+
+      // Get the document reference for the specific movie
+      DocumentReference movieDocument = moviesCollection.doc(widget.movieId);
+
+      // Fetch the current data of the movie document
+      DocumentSnapshot movieSnapshot = await movieDocument.get();
+
+      // Extract the existing 'Cast' data or initialize an empty list
+      List<Map<String, dynamic>> castData = List<Map<String, dynamic>>.from((movieSnapshot.data() as Map<String, dynamic>)['Cast'] ?? []);
+
+      // Check if the index is within the valid range
+      if (index >= 0 && index < castData.length) {
+        // Remove the item at the specified index
+        // castData.removeAt(index);
+
+        castData[index]['cast_image'] = castImage;
+        castData[index]['cast_name'] = castName;
+
+        // Update the 'Cast' field in the 'movies' document
+        await movieDocument.update({'Cast': castData});
+        print('Data deleted successfully!');
+      } else {
+        print('Invalid index for deletion.');
+      }
+    } catch (e) {
+      print('Error deleting data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,53 +281,108 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
         title: Text('Multiple Image Picker'),
       ),
       body:isLoading? Center(child: CircularProgressIndicator()) : Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            height: 250,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _imageDataList.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Image.file(
-                        File(_imageDataList[index].path),
-                        height: 100,
-                        width: 100,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(width: 10,),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _pickImage,
+                  child: Text('Pick Image'),
+                ),
+              ),
+              SizedBox(width: 10,),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            content: Text("data will be added successfully")
+                        ));
+                    Navigator.pop(context);
+                  },
+                  child: Text('Submit'),
+                ),
+              ),
+              SizedBox(width: 10,),
+            ],
+          ),
+          Expanded(
+            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection(widget.selectId)
+                  .doc(widget.movieId)
+                  .snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                Map<String, dynamic>? movieData = snapshot.data!.data();
+                if (movieData == null || !movieData.containsKey('Cast')) {
+                  return Center(child: Text('No cast data available.'));
+                }
+                List<dynamic>? castData = movieData['Cast'];
+                if (castData == null || castData.isEmpty) {
+                  return Center(child: Text('No cast data available.'));
+                }
+                return ListView(
+                  physics: BouncingScrollPhysics(),
+                  children: List.generate(castData.length, (index) {
+                    return Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12,vertical: 10),
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.symmetric(horizontal: 16,vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[350],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.black38
+                        )
                       ),
-                      SizedBox(height: 8),
-                      Text(_imageDataList[index].name),
-                      SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          _deleteImage(index);
-                        },
-                        child: Text('Delete'),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Text("${index+1}."),
+                          // SizedBox(width: 6,),
+                          Column(
+                            children: [
+                              Image.network(
+                                castData[index]['cast_image'],
+                                height: 80,
+                                width: 80,
+                                fit: BoxFit.fill,
+                              ),
+                              SizedBox(height: 10,),
+                              Text(castData[index]['cast_name']),
+                            ],
+                          ),
+                          Spacer(),
+                          ElevatedButton(
+                            onPressed: () {
+                              _deleteshowNameInputDialog(index);
+                            },
+                            child: Text('Delete'),
+                          ),
+                          SizedBox(width: 6,),
+                          ElevatedButton(
+                            onPressed: () {
+                              _updatepickImage(index,castData[index]['cast_name']);
+                            },
+                            child: Text('Update'),
+                          ),
+                          SizedBox(width: 10,)
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  }),
                 );
               },
             ),
           ),
-          ElevatedButton(
-            onPressed: _pickImage,
-            child: Text('Pick Image'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      behavior: SnackBarBehavior.floating,
-                      content: Text("data will be added successfully")
-                  ));
-          Navigator.pop(context);
-            },
-            child: Text('Submit'),
-          ),
-
         ],
       ),
     );

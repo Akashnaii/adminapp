@@ -168,7 +168,7 @@ class _MovieListPageState extends State<MovieListPage> {
           backgroundColor: Colors.white,
           elevation: 0,
           foregroundColor: Colors.black,
-          title: const Text("MovieMate"),
+          title: const Text("MovieMate" , style: TextStyle(fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
