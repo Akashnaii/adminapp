@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "1048352358697",
+    "project_id": "moviemate-4faf1",
+    "storage_bucket": "moviemate-4faf1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048352358697:android:8283e67a33840a7f37b738",
+        "android_client_info": {
+          "package_name": "com.example.adminmovie"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048352358697-eikh9tn91inoflda6tqtbt2dptaghm7m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGMPXWQggB2kyZVCF3F6aTH-DQGLC91lQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048352358697-eikh9tn91inoflda6tqtbt2dptaghm7m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048352358697:android:41da5eb6dd50164837b738",
+        "android_client_info": {
+          "package_name": "com.example.moviemate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1048352358697-68iom8e9lkppgh35c75mpkj1lj9ssfgt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.moviemate",
+            "certificate_hash": "a119ceb59fc7dce9b228037a4b00a99b9d6a8996"
+          }
+        },
+        {
+          "client_id": "1048352358697-eikh9tn91inoflda6tqtbt2dptaghm7m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGMPXWQggB2kyZVCF3F6aTH-DQGLC91lQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1048352358697-eikh9tn91inoflda6tqtbt2dptaghm7m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
