@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 
 import 'image_pick.dart';
@@ -186,84 +187,90 @@ class _MovieListPageState extends State<MovieListPage> {
                   context: context,
                   builder: (context) {
                     return StatefulBuilder(builder: (context, setState) {
-                      return AlertDialog(
-                        scrollable: true,
-                        title: const Text('Select Show'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            _selectedImage != null
-                                ? Image.file(_selectedImage!)
-                                : const SizedBox.shrink(),
-                            DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              hint: const Text("Choose"),
-                              value: dropdownvalue,
-                              icon: const Icon(Icons.arrow_drop_down),
-                              style: const TextStyle(color: Colors.black),
-                              // underline: Container(
-                              //   height: 2,
-                              //   color: Colors.black,
-                              // ),
-                              items: items.map((String items) {
-                                return DropdownMenuItem(
-                                  value: items,
-                                  child: Text(items),
-                                );
-                              }).toList(),
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  dropdownvalue = newValue!;
-                                  print("val$dropdownvalue");
-                                });
-                              },
-                            ),
-                            TextFormField(
-                              controller: nameController,
-                              decoration: const InputDecoration(labelText: 'Title'),
-                            ),
-                            TextFormField(
-                              controller: descriptionController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Description'),
-                            ),
-                            TextFormField(
-                              controller: priceController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Ticket Price'),
-                              keyboardType: TextInputType.number,
-                            ),
-                            TextFormField(
-                              controller: ratingController,
-                              decoration: const InputDecoration(labelText: 'Rating'),
-                              keyboardType: TextInputType.number,
-                            ),
-                            Row(
-                              children: [
-                                // ElevatedButton(
-                                //   onPressed: (){
-                                //     Navigator.push(context,MaterialPageRoute(builder: (context)=> MyImagePickerScreen()));
-                                //   },
-                                //   child: Text('cast Image'),
+                      return SingleChildScrollView(
+                        child: AlertDialog(
+                          scrollable: true,
+                          title: const Text('Select Show'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              _selectedImage != null
+                                  ? Image.file(_selectedImage!)
+                                  : const SizedBox.shrink(),
+                              DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                hint: const Text("Choose"),
+                                value: dropdownvalue,
+                                icon: const Icon(Icons.arrow_drop_down),
+                                style: const TextStyle(color: Colors.black),
+                                // underline: Container(
+                                //   height: 2,
+                                //   color: Colors.black,
                                 // ),
-                                const Spacer(),
-                                ElevatedButton(
-                                  onPressed: _pickImage,
-                                  child: const Text('Pick Image'),
-                                ),
-                              ],
+                                items: items.map((String items) {
+                                  return DropdownMenuItem(
+                                    alignment: Alignment.center,
+                                    value: items,
+                                    child: Text(items),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    dropdownvalue = newValue!;
+                                    print("val$dropdownvalue");
+                                  });
+                                },
+                              ),
+                              TextFormField(
+                                controller: nameController,
+                                decoration: const InputDecoration(labelText: 'Title'),
+                              ),
+                              TextFormField(
+                                controller: descriptionController,
+                                decoration:
+                                    const InputDecoration(labelText: 'Description'),
+                              ),
+                              TextFormField(
+                                controller: priceController,
+                                decoration:
+                                    const InputDecoration(labelText: 'Ticket Price'),
+                                keyboardType: TextInputType.number,
+                              ),
+                              TextFormField(
+                                controller: ratingController,
+                                decoration: const InputDecoration(labelText: 'Rating'),
+                                keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.allow(RegExp(r'^[0-5]'))
+                        ]
+                              ),
+                              Row(
+                                children: [
+                                  // ElevatedButton(
+                                  //   onPressed: (){
+                                  //     Navigator.push(context,MaterialPageRoute(builder: (context)=> MyImagePickerScreen()));
+                                  //   },
+                                  //   child: Text('cast Image'),
+                                  // ),
+                                  const Spacer(),
+                                  ElevatedButton(
+                                    onPressed: _pickImage,
+                                    child: const Text('Pick Image'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                _addMovie(context);
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Add Show'),
                             ),
                           ],
                         ),
-                        actions: [
-                          ElevatedButton(
-                            onPressed: () {
-                              _addMovie(context);
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Add Show'),
-                          ),
-                        ],
                       );
                     });
                   },
@@ -272,138 +279,197 @@ class _MovieListPageState extends State<MovieListPage> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            DropdownButtonFormField<String>(
-              isExpanded: true,
-              hint: const Text("Choose"),
-              value: select,
-              icon: const Icon(Icons.arrow_drop_down),
-              style: const TextStyle(color: Colors.black),
-              // underline: Container(
-              //   height: 2,
-              //   color: Colors.black,
-              // ),
-              items: items.map((String items) {
-                return DropdownMenuItem(
-                  value: items,
-                  child: Text(items),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  select = newValue!;
-                  print("val$select");
-                });
-              },
-            ),
-            StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection(select.toString()).snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  List<QueryDocumentSnapshot> movies = snapshot.data!.docs;
-
-                  return RefreshIndicator(
-                      onRefresh: refreshData,
-                      child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: movies.length,
-                          itemBuilder: (context, index) {
-                            var movieData =
-                            movies[index].data() as Map<String, dynamic>?;
-
-                            if (movieData == null) {
-                              return const ListTile(
-                                title: Text("Invalid Movie Data"),
-                                subtitle: Text("Movie data is missing."),
-                              );
-                            }
-                            // String rating = movieData['rating']?.toString() ?? 'N/A';
-                            String name = movieData['name'] ?? 'N/A';
-                            String description = movieData['description'] ?? 'N/A';
-                            String ticketPrice =
-                                movieData['ticket_price']?.toString() ?? "0.0";
-                            String imageUrl = movieData['image_url'] ?? '';
-
-                            if (name.isEmpty || description.isEmpty) {
-                              return const ListTile(
-                                title: Text("Invalid Movie Data"),
-                                subtitle: Text("Movie data is missing or invalid."),
-                              );
-                            }
-                            return ListTile(
-                              title: Text(name),
-                              subtitle: Text(description),
-                              trailing: Container(
-                                width: 100,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    IconButton(
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              final nameController =
-                                              TextEditingController(
-                                                  text: movieData['name']);
-                                              final descriptionController =
-                                              TextEditingController(
-                                                  text:
-                                                  movieData['description']);
-                                              final priceController =
-                                              TextEditingController(
-                                                  text:
-                                                  movieData['ticket_price']
-                                                      .toString());
-                                              final ratingController =
-                                              TextEditingController(
-                                                  text: movieData['rating'].toString());
-
-                                              return AlertDialog(
-                                                scrollable: true,
-                                                title: const Text('Edit Movie'),
-                                                content: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Image.network(imageUrl),
-                                                    TextFormField(
-                                                      controller: nameController,
-                                                      decoration: const InputDecoration(
-                                                          labelText: 'Movie Name'),
+        body:
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              DropdownButtonFormField<String>(
+                alignment: Alignment.center,
+                isExpanded: true,
+                hint: Center(child: const Text("Choose")),
+                value: select,
+                icon: const Icon(Icons.arrow_drop_down),
+                style: const TextStyle(color: Colors.black),
+                // underline: Container(
+                //   height: 2,
+                //   color: Colors.black,
+                // ),
+                items: items.map((String items) {
+                  return DropdownMenuItem(
+                    alignment: Alignment.center,
+                    value: items,
+                    child: Center(child: Text(items)),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    select = newValue!;
+                    print("val$select");
+                  });
+                },
+              ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection(select.toString()).snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+          
+                    List<QueryDocumentSnapshot> movies = snapshot.data!.docs;
+          
+                    return RefreshIndicator(
+                        onRefresh: refreshData,
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: movies.length,
+                            itemBuilder: (context, index) {
+                              var movieData =
+                              movies[index].data() as Map<String, dynamic>?;
+          
+                              if (movieData == null) {
+                                return const ListTile(
+                                  title: Text("Invalid Movie Data"),
+                                  subtitle: Text("Movie data is missing."),
+                                );
+                              }
+                              // String rating = movieData['rating']?.toString() ?? 'N/A';
+                              String name = movieData['name'] ?? 'N/A';
+                              String description = movieData['description'] ?? 'N/A';
+                              String ticketPrice =
+                                  movieData['ticket_price']?.toString() ?? "0.0";
+                              String imageUrl = movieData['image_url'] ?? '';
+          
+                              if (name.isEmpty || description.isEmpty) {
+                                return const ListTile(
+                                  title: Text("Invalid Movie Data"),
+                                  subtitle: Text("Movie data is missing or invalid."),
+                                );
+                              }
+                              return ListTile(
+                                title: Text(name),
+                                subtitle: Text(description),
+                                trailing: Container(
+                                  width: 100,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                final nameController =
+                                                TextEditingController(
+                                                    text: movieData['name']);
+                                                final descriptionController =
+                                                TextEditingController(
+                                                    text:
+                                                    movieData['description']);
+                                                final priceController =
+                                                TextEditingController(
+                                                    text:
+                                                    movieData['ticket_price']
+                                                        .toString());
+                                                final ratingController =
+                                                TextEditingController(
+                                                    text: movieData['rating'].toString());
+          
+                                                return AlertDialog(
+                                                  scrollable: true,
+                                                  title: const Text('Edit Movie'),
+                                                  content: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Image.network(imageUrl),
+                                                      TextFormField(
+                                                        controller: nameController,
+                                                        decoration: const InputDecoration(
+                                                            labelText: 'Movie Name'),
+                                                      ),
+                                                      TextFormField(
+                                                        controller:
+                                                        descriptionController,
+                                                        decoration: const InputDecoration(
+                                                            labelText: 'Description'),
+                                                      ),
+                                                      TextFormField(
+                                                        controller: priceController,
+                                                        decoration: const InputDecoration(
+                                                            labelText:
+                                                            'Ticket Price'),
+                                                        keyboardType:
+                                                        TextInputType.number,
+                                                      ),
+                                                      TextFormField(
+                                                        controller: ratingController,
+                                                        decoration: const InputDecoration(
+                                                            labelText: 'Rating'),
+                                                        keyboardType: TextInputType.number,
+                                                      ),
+          
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context).pop();
+                                                          _uploadImage(context,
+                                                              movies[index].id);
+                                                        },
+                                                        child: const Text('Update Image'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  actions: [
+                                                    ElevatedButton(
+                                                      onPressed: () async {
+                                                        Navigator.of(context).pop();
+          
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection(select.toString())
+                                                            .doc(movies[index].id)
+                                                            .update({
+                                                          'name': nameController.text,
+                                                          'description': descriptionController.text,
+                                                          'ticket_price': double.parse(priceController.text),
+                                                          'Cast': castList,
+                                                          'rating': movieData['rating'] ?? 0,
+                                                        }).then((_) {
+                                                          ScaffoldMessenger.of(
+                                                              context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  'Movie updated successfully!'),
+                                                            ),
+                                                          );
+                                                        }).catchError((error) {
+                                                          print(
+                                                              "Error updating movie: $error");
+                                                        });
+                                                      },
+                                                      child: Text('Update $select'),
                                                     ),
-                                                    TextFormField(
-                                                      controller:
-                                                      descriptionController,
-                                                      decoration: const InputDecoration(
-                                                          labelText: 'Description'),
-                                                    ),
-                                                    TextFormField(
-                                                      controller: priceController,
-                                                      decoration: const InputDecoration(
-                                                          labelText:
-                                                          'Ticket Price'),
-                                                      keyboardType:
-                                                      TextInputType.number,
-                                                    ),
-                                                    TextFormField(
-                                                      controller: ratingController,
-                                                      decoration: const InputDecoration(
-                                                          labelText: 'Rating'),
-                                                      keyboardType: TextInputType.number,
-                                                    ),
-
                                                     ElevatedButton(
                                                       onPressed: () {
-                                                        Navigator.of(context).pop();
-                                                        _uploadImage(context,
-                                                            movies[index].id);
+                                                        FirebaseFirestore.instance
+                                                            .collection(select.toString())
+                                                            .doc(movies[index].id)
+                                                            .delete()
+                                                            .then((_) {
+                                                          ScaffoldMessenger.of(
+                                                              context)
+                                                              .showSnackBar(
+                                                             SnackBar(
+                                                              content: Text(
+                                                                  '$select deleted successfully!'),
+                                                            ),
+                                                          );
+                                                        }).catchError((error) {
+                                                          print(
+                                                              "Error deleting movie: $error");
+                                                        });
                                                       },
-                                                      child: const Text('Update Image'),
+                                                      child:  Text('Delete $select'),
                                                     ),
                                                   ],
                                                 ),
@@ -483,20 +549,20 @@ class _MovieListPageState extends State<MovieListPage> {
                                         icon: const Icon(Icons.person))
                                   ],
                                 ),
-                              ),
-                              leading: imageUrl.isNotEmpty
-                                  ? Image.network(imageUrl)
-                                  : const Center(
-                                child: SizedBox(
-                                  width: 50,
-                                  height: 50,
-                                  child: CircularProgressIndicator(),
+                                leading: imageUrl.isNotEmpty
+                                    ? Image.network(imageUrl)
+                                    : const Center(
+                                  child: SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                    child: CircularProgressIndicator(),
+                                  ),
                                 ),
-                              ),
-                            );
-                          }));
-                }),
-          ],
+                              );
+                            }));
+                  }),
+            ],
+          ),
         ));
   }
 

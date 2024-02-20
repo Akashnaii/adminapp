@@ -314,6 +314,8 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
             child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
                   .collection(widget.selectId)
+
+
                   .doc(widget.movieId)
                   .snapshots(),
               builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
