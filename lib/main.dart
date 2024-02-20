@@ -89,11 +89,15 @@ class _MovieListPageState extends State<MovieListPage> {
       );
 
       await FirebaseFirestore.instance
-          .collection('movies')
+          .collection(select.toString())
           .doc(movieId)
           .update({
-        'image_url': imageUrl,
-        'rating' : rating,
+        'name': nameController.text,
+        'description': descriptionController.text,
+        'ticket_price': double.parse(priceController.text),
+        'Cast': castList,
+         'rating':ratingController,
+        'image_url' : imageUrl,
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -406,7 +410,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                 actions: [
                                                   ElevatedButton(
                                                     onPressed: () async {
-                                                      Navigator.of(context).pop();
+
 
                                                       await FirebaseFirestore
                                                           .instance
@@ -418,6 +422,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                         'ticket_price': double.parse(priceController.text),
                                                         'Cast': castList,
                                                         'rating': movieData['rating'] ?? 0,
+                                                        'image_url' : imageUrl,
                                                       }).then((_) {
                                                         ScaffoldMessenger.of(
                                                             context)
@@ -431,6 +436,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                         print(
                                                             "Error updating movie: $error");
                                                       });
+                                                      Navigator.of(context).pop();
                                                     },
                                                     child: Text('Update $select'),
                                                   ),
