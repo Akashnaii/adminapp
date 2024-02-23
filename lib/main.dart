@@ -90,15 +90,11 @@ class _MovieListPageState extends State<MovieListPage> {
       );
 
       await FirebaseFirestore.instance
-          .collection(select.toString())
+          .collection('movies')
           .doc(movieId)
           .update({
-        'name': nameController.text,
-        'description': descriptionController.text,
-        'ticket_price': double.parse(priceController.text),
-        'Cast': castList,
-         'rating':ratingController,
-        'image_url' : imageUrl,
+        'image_url': imageUrl,
+        'rating' : rating,
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -111,14 +107,18 @@ class _MovieListPageState extends State<MovieListPage> {
     print("add the movie..");
     try {
       if (_selectedImage != null) {
+        final rating = double.tryParse(ratingController.text);
+        if (rating == null || rating < 0 || rating >= 5) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter a valid rating')),
+          );
+        }
         final Reference storageReference = FirebaseStorage.instance
             .ref()
             .child('movie_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
 
         await storageReference.putFile(_selectedImage!);
         final String imageUrl = await storageReference.getDownloadURL();
-        double rating = double.tryParse(ratingController.text) ?? 0.0;
-
 
         await FirebaseFirestore.instance.collection(dropdownvalue.toString()).add({
           'name': nameController.text,
@@ -142,9 +142,11 @@ class _MovieListPageState extends State<MovieListPage> {
         });
         ratingController.clear();
       } else {
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select an image first.')),
         );
+
       }
     } catch (error) {
       print("Error adding movie: $error");
@@ -228,21 +230,46 @@ class _MovieListPageState extends State<MovieListPage> {
                               TextFormField(
                                 controller: descriptionController,
                                 decoration:
-                                    const InputDecoration(labelText: 'Description'),
+                                const InputDecoration(labelText: 'Description'),
                               ),
                               TextFormField(
                                 controller: priceController,
                                 decoration:
-                                    const InputDecoration(labelText: 'Ticket Price'),
+                                const InputDecoration(labelText: 'Ticket Price'),
                                 keyboardType: TextInputType.number,
                               ),
                               TextFormField(
-                                controller: ratingController,
-                                decoration: const InputDecoration(labelText: 'Rating'),
-                                keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.allow(RegExp(r'^[0-5]'))
-                        ]
+                                  controller: ratingController,
+                                  decoration: const InputDecoration(labelText: 'Rating'),
+                                  keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                     const SnackBar(
+                                        content: Text('Please enter a rating'),
+                                      ),
+                                    );
+                                    return 'Please enter a rating';
+                                  }
+                                  final rating = double.tryParse(value!);
+                                  if (rating == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Please enter a valid number'),
+                                      ),
+                                    );
+                                    return 'Please enter a valid number';
+                                  }
+                                  if (rating < 0 || rating > 5) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Rating must be between 0 and 5'),
+                                      ),
+                                    );
+                                    return 'Rating must be between 0 and 5';
+                                  }
+                                  return null;
+                                },
                               ),
                               Row(
                                 children: [
@@ -314,9 +341,9 @@ class _MovieListPageState extends State<MovieListPage> {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
-          
+
                     List<QueryDocumentSnapshot> movies = snapshot.data!.docs;
-          
+
                     return RefreshIndicator(
                         onRefresh: refreshData,
                         child: ListView.builder(
@@ -326,7 +353,7 @@ class _MovieListPageState extends State<MovieListPage> {
                             itemBuilder: (context, index) {
                               var movieData =
                               movies[index].data() as Map<String, dynamic>?;
-          
+
                               if (movieData == null) {
                                 return const ListTile(
                                   title: Text("Invalid Movie Data"),
@@ -339,7 +366,7 @@ class _MovieListPageState extends State<MovieListPage> {
                               String ticketPrice =
                                   movieData['ticket_price']?.toString() ?? "0.0";
                               String imageUrl = movieData['image_url'] ?? '';
-          
+
                               if (name.isEmpty || description.isEmpty) {
                                 return const ListTile(
                                   title: Text("Invalid Movie Data"),
@@ -348,7 +375,7 @@ class _MovieListPageState extends State<MovieListPage> {
                               }
                               return ListTile(
                                 title: Text(name),
-                                subtitle: Text(description),
+                                subtitle: Text(''),
                                 trailing: Container(
                                   width: 100,
                                   child: Row(
@@ -374,7 +401,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                 final ratingController =
                                                 TextEditingController(
                                                     text: movieData['rating'].toString());
-          
+
                                                 return AlertDialog(
                                                   scrollable: true,
                                                   title: const Text('Edit Movie'),
@@ -407,7 +434,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                             labelText: 'Rating'),
                                                         keyboardType: TextInputType.number,
                                                       ),
-          
+
                                                       ElevatedButton(
                                                         onPressed: () {
                                                           Navigator.of(context).pop();
@@ -422,7 +449,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                     ElevatedButton(
                                                       onPressed: () async {
                                                         Navigator.of(context).pop();
-          
+
                                                         await FirebaseFirestore
                                                             .instance
                                                             .collection(select.toString())
@@ -459,7 +486,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                           ScaffoldMessenger.of(
                                                               context)
                                                               .showSnackBar(
-                                                             SnackBar(
+                                                            SnackBar(
                                                               content: Text(
                                                                   '$select deleted successfully!'),
                                                             ),
@@ -472,82 +499,26 @@ class _MovieListPageState extends State<MovieListPage> {
                                                       child:  Text('Delete $select'),
                                                     ),
                                                   ],
-                                                ),
-                                                actions: [
-                                                  ElevatedButton(
-                                                    onPressed: () async {
-
-
-                                                      await FirebaseFirestore
-                                                          .instance
-                                                          .collection(select.toString())
-                                                          .doc(movies[index].id)
-                                                          .update({
-                                                        'name': nameController.text,
-                                                        'description': descriptionController.text,
-                                                        'ticket_price': double.parse(priceController.text),
-                                                        'Cast': castList,
-                                                        'rating': movieData['rating'] ?? 0,
-                                                        'image_url' : imageUrl,
-                                                      }).then((_) {
-                                                        ScaffoldMessenger.of(
-                                                            context)
-                                                            .showSnackBar(
-                                                          const SnackBar(
-                                                            content: Text(
-                                                                'Movie updated successfully!'),
-                                                          ),
-                                                        );
-                                                      }).catchError((error) {
-                                                        print(
-                                                            "Error updating movie: $error");
-                                                      });
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                    child: Text('Update $select'),
-                                                  ),
-                                                  ElevatedButton(
-                                                    onPressed: () {
-                                                      FirebaseFirestore.instance
-                                                          .collection(select.toString())
-                                                          .doc(movies[index].id)
-                                                          .delete()
-                                                          .then((_) {
-                                                        ScaffoldMessenger.of(
-                                                            context)
-                                                            .showSnackBar(
-                                                           SnackBar(
-                                                            content: Text(
-                                                                '$select deleted successfully!'),
-                                                          ),
-                                                        );
-                                                      }).catchError((error) {
-                                                        print(
-                                                            "Error deleting movie: $error");
-                                                      });
-                                                    },
-                                                    child:  Text('Delete $select'),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        icon: const Icon(Icons.remove_red_eye)),
-                                    IconButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    MyImagePickerScreen(
-                                                      movieId: movies[index].id,
-                                                      selectId: select.toString(),
-                                                    )),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.person))
-                                  ],
+                                                );
+                                              },
+                                            );
+                                          },
+                                          icon: const Icon(Icons.remove_red_eye)),
+                                      IconButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      MyImagePickerScreen(
+                                                        movieId: movies[index].id,
+                                                        selectId: select.toString(),
+                                                      )),
+                                            );
+                                          },
+                                          icon: const Icon(Icons.person))
+                                    ],
+                                  ),
                                 ),
                                 leading: imageUrl.isNotEmpty
                                     ? Image.network(imageUrl)
