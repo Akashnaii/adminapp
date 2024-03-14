@@ -15,7 +15,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +38,11 @@ class _MovieListPageState extends State<MovieListPage> {
   String? dropdownvalue;
   String? select = 'movies';
 
-  var items = ['movies', 'Standup comedy', 'Concert'];
+  // List of items in our dropdown menu
+  var items = ['movies', 'Standup commedy', 'Concert'];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController  locationController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController ratingController = TextEditingController();
   File? _selectedImage;
@@ -65,55 +67,39 @@ class _MovieListPageState extends State<MovieListPage> {
   }
 
   Future<void> _uploadImage(BuildContext context, String movieId) async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+
+    if (result != null) {
+      PlatformFile file = result.files.first;
+      String filePath = file.path!;
+      File newImage = File(filePath);
+
+      final Reference storageReference = FirebaseStorage.instance
+          .ref()
+          .child('movie_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      await storageReference.putFile(newImage);
+
+      final String imageUrl = await storageReference.getDownloadURL();
+      double rating = double.tryParse(ratingController.text) ?? 0.0;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Image updated successfully!')),
       );
 
-      if (result != null) {
-        PlatformFile file = result.files.first;
-        String filePath = file.path!;
-        File newImage = File(filePath);
-        debugPrint("newImage ${newImage}");
-
-        final Reference storageReference = FirebaseStorage.instance
-            .ref()
-            .child('movie_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
-
-        await storageReference.putFile(newImage);
-
-        final String imageUrl = await storageReference.getDownloadURL();
-        // debugPrint("imageUrl ${imageUrl}");
-
-        // double rating = 0.0;
-        // if (ratingController.text.isNotEmpty) {
-        //   rating = double.tryParse(ratingController.text) ?? 0.0;
-        // }
-
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(content: Text('Image updated successfully!')),
-        // );
-
-        debugPrint("imageUrl:${imageUrl}");
-        await FirebaseFirestore.instance
-            .collection(select.toString())
-            .doc(movieId)
-            .update({
-          'image_url': imageUrl,
-          // 'rating': rating,
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a new image.')),
-        );
-      }
-    } catch (error) {
-      print("Error uploading image: $error");
+      await FirebaseFirestore.instance
+          .collection('movies')
+          .doc(movieId)
+          .update({
+        'image_url': imageUrl,
+        'rating' : rating,
+      });
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to update image: $error'),
-        ),
+        const SnackBar(content: Text('Please select a new image.')),
       );
     }
   }
@@ -122,13 +108,18 @@ class _MovieListPageState extends State<MovieListPage> {
     print("add the movie..");
     try {
       if (_selectedImage != null) {
+        final rating = double.tryParse(ratingController.text);
+        if (rating == null || rating < 0 || rating >= 5) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter a valid rating')),
+          );
+        }
         final Reference storageReference = FirebaseStorage.instance
             .ref()
             .child('movie_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
 
         await storageReference.putFile(_selectedImage!);
         final String imageUrl = await storageReference.getDownloadURL();
-        double rating = double.tryParse(ratingController.text) ?? 0.0;
 
         await FirebaseFirestore.instance.collection(dropdownvalue.toString()).add({
           'name': nameController.text,
@@ -152,9 +143,11 @@ class _MovieListPageState extends State<MovieListPage> {
         });
         ratingController.clear();
       } else {
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select an image first.')),
         );
+
       }
     } catch (error) {
       print("Error adding movie: $error");
@@ -178,315 +171,149 @@ class _MovieListPageState extends State<MovieListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-        title: const Text("MovieMate", style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              nameController.clear();
-              priceController.clear();
-              descriptionController.clear();
-              ratingController.clear();
-              _selectedImage = null;
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return StatefulBuilder(builder: (context, setState) {
-                    return SingleChildScrollView(
-                      child: AlertDialog(
-                        scrollable: true,
-                        title: const Text('Select Show'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            _selectedImage != null
-                                ? Image.file(_selectedImage!)
-                                : const SizedBox.shrink(),
-                            DropdownButtonFormField<String>(
-                              isExpanded: true,
-                              hint: const Text("Choose"),
-                              value: dropdownvalue,
-                              icon: const Icon(Icons.arrow_drop_down),
-                              style: const TextStyle(color: Colors.black),
-                              items: items.map((String items) {
-                                return DropdownMenuItem(
-                                  alignment: Alignment.center,
-                                  value: items,
-                                  child: Text(items),
-                                );
-                              }).toList(),
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  dropdownvalue = newValue!;
-                                  print("val$dropdownvalue");
-                                });
-                              },
-                            ),
-                            TextFormField(
-                              controller: nameController,
-                              decoration: const InputDecoration(labelText: 'Title'),
-                            ),
-                            TextFormField(
-                              controller: descriptionController,
-                              decoration: const InputDecoration(labelText: 'Description'),
-                            ),
-                            TextFormField(
-                              controller: priceController,
-                              decoration: const InputDecoration(labelText: 'Ticket Price'),
-                              keyboardType: TextInputType.number,
-                            ),
-                            TextFormField(
-                              controller: ratingController,
-                              decoration: const InputDecoration(labelText: 'Rating'),
-                              keyboardType: TextInputType.number,
-                              inputFormatters: <TextInputFormatter>[
-                                FilteringTextInputFormatter.allow(RegExp(r'^[0-5]'))
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const Spacer(),
-                                ElevatedButton(
-                                  onPressed: _pickImage,
-                                  child: const Text('Pick Image'),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          foregroundColor: Colors.black,
+          title: const Text("MovieMate" , style: TextStyle(fontWeight: FontWeight.bold)),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                nameController.clear();
+                priceController.clear();
+                descriptionController.clear();
+                ratingController.clear();
+                _selectedImage = null;
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return StatefulBuilder(builder: (context, setState) {
+                      return SingleChildScrollView(
+                        child: AlertDialog(
+                          scrollable: true,
+                          title: const Text('Select Show'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              _selectedImage != null
+                                  ? Image.file(_selectedImage!)
+                                  : const SizedBox.shrink(),
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.black), // Black outline border
+                                  borderRadius: BorderRadius.circular(10.0),
                                 ),
-                              ],
+                                child: DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  hint: const Text("Choose"),
+                                  value: dropdownvalue,
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  style: const TextStyle(color: Colors.black),
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                    border: InputBorder.none, // Remove default border
+                                  ),
+                                  items: items.map((String items) {
+                                    return DropdownMenuItem(
+                                      alignment: Alignment.center,
+                                      value: items,
+                                      child: Text(items),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      dropdownvalue = newValue!;
+                                      print("val$dropdownvalue");
+                                    });
+                                  },
+                                ),
+                              ),
+                              TextFormField(
+                                controller: nameController,
+                                decoration: const InputDecoration(labelText: 'Title'),
+                              ),
+                              TextFormField(
+                                controller: descriptionController,
+                                decoration:
+                                const InputDecoration(labelText: 'Description'),
+                              ),
+                              if (dropdownvalue == 'Concert' || dropdownvalue == 'Standup commedy')
+                              TextFormField(
+                                controller: locationController,
+                                decoration:
+                                const InputDecoration(labelText: 'Location'),
+                              ),
+                              TextFormField(
+                                controller: priceController,
+                                decoration:
+                                const InputDecoration(labelText: 'Ticket Price'),
+                                keyboardType: TextInputType.number,
+                              ),
+                              TextFormField(
+                                controller: ratingController,
+                                decoration: const InputDecoration(labelText: 'Rating'),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Please enter a rating'),
+                                      ),
+                                    );
+                                    return 'Please enter a rating';
+                                  }
+                                  final rating = double.tryParse(value!);
+                                  if (rating == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Please enter a valid number'),
+                                      ),
+                                    );
+                                    return 'Please enter a valid number';
+                                  }
+                                  if (rating < 0 || rating > 5) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Rating must be between 0 and 5'),
+                                      ),
+                                    );
+                                    return 'Rating must be between 0 and 5';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              Row(
+                                children: [
+                                  // ElevatedButton(
+                                  //   onPressed: (){
+                                  //     Navigator.push(context,MaterialPageRoute(builder: (context)=> MyImagePickerScreen()));
+                                  //   },
+                                  //   child: Text('cast Image'),
+                                  // ),
+                                  const Spacer(),
+                                  ElevatedButton(
+                                    onPressed: _pickImage,
+                                    child: const Text('Pick Image'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                _addMovie(context);
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Add Show'),
                             ),
                           ],
                         ),
-                        actions: [
-                          ElevatedButton(
-                            onPressed: () {
-                              _addMovie(context);
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Add Show'),
-                          ),
-                        ],
-                      ),
-                    );
-                  });
-                },
-              );
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            DropdownButtonFormField<String>(
-              alignment: Alignment.center,
-              isExpanded: true,
-              hint: const Center(child: Text("Choose")),
-              value: select,
-              icon: const Icon(Icons.arrow_drop_down),
-              style: const TextStyle(color: Colors.black),
-              items: items.map((String items) {
-                return DropdownMenuItem(
-                  alignment: Alignment.center,
-                  value: items,
-                  child: Center(child: Text(items)),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  select = newValue!;
-                  print("val$select");
-                });
-              },
-            ),
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection(select.toString()).snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                List<QueryDocumentSnapshot> movies = snapshot.data!.docs;
-
-                return RefreshIndicator(
-                  onRefresh: refreshData,
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: movies.length,
-                    itemBuilder: (context, index) {
-                      var movieData = movies[index].data() as Map<String, dynamic>?;
-
-                      if (movieData == null) {
-                        return const ListTile(
-                          title: Text("Invalid Movie Data"),
-                          subtitle: Text("Movie data is missing."),
-                        );
-                      }
-
-                      String name = movieData['name'] ?? 'N/A';
-                      String description = movieData['description'] ?? 'N/A';
-                      String ticketPrice = movieData['ticket_price']?.toString() ?? "0.0";
-                      String imageUrl = movieData['image_url'] ?? '';
-
-                      if (name.isEmpty || description.isEmpty) {
-                        return const ListTile(
-                          title: Text("Invalid Movie Data"),
-                          subtitle: Text("Movie data is missing or invalid."),
-                        );
-                      }
-
-                      return ListTile(
-                        title: Text(name),
-                        subtitle: Text(description),
-                        trailing: Container(
-                          width: 100,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      final nameController =
-                                      TextEditingController(text: movieData['name']);
-                                      final descriptionController =
-                                      TextEditingController(text: movieData['description']);
-                                      final priceController =
-                                      TextEditingController(text: movieData['ticket_price'].toString());
-                                      final ratingController =
-                                      TextEditingController(text: movieData['rating'].toString());
-
-                                      return AlertDialog(
-                                        scrollable: true,
-                                        title: const Text('Edit Movie'),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Image.network(imageUrl),
-                                            TextFormField(
-                                              controller: nameController,
-                                              decoration: const InputDecoration(labelText: 'Movie Name'),
-                                            ),
-                                            TextFormField(
-                                              controller: descriptionController,
-                                              decoration: const InputDecoration(labelText: 'Description'),
-                                            ),
-                                            TextFormField(
-                                              controller: priceController,
-                                              decoration: const InputDecoration(labelText: 'Ticket Price'),
-                                              keyboardType: TextInputType.number,
-                                            ),
-                                            TextFormField(
-                                              controller: ratingController,
-                                              decoration: const InputDecoration(labelText: 'Rating'),
-                                              keyboardType: TextInputType.number,
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: ()  {
-                                                 _uploadImage(context, movies[index].id);
-                                                Navigator.of(context).pop(); // Close the dialog
-                                              },
-                                              child: const Text('Update Image'),
-                                            ),
-
-                                          ],
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                            onPressed: () async {
-                                              if (context == null) {
-                                                print("Error: Context is null.");
-                                                return;
-                                              }
-
-                                              Navigator.of(context).pop();
-
-                                              try {
-                                                await FirebaseFirestore.instance
-                                                    .collection(select.toString())
-                                                    .doc(movies[index].id)
-                                                    .update({
-                                                  'name': nameController.text,
-                                                  'description': descriptionController.text,
-                                                  'ticket_price': double.parse(priceController.text),
-                                                  'rating': double.parse(ratingController.text),
-                                                  'image_url': imageUrl,
-                                                });
-
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(
-                                                    content: Text('Movie updated successfully!'),
-                                                  ),
-                                                );
-                                              } catch (error) {
-                                                print("Error updating movie: $error");
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('Failed to update movie: $error'),
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                            child: Text('Update $select'),
-                                          ),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              FirebaseFirestore.instance
-                                                  .collection(select.toString())
-                                                  .doc(movies[index].id)
-                                                  .delete()
-                                                  .then((_) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('$select deleted successfully!'),
-                                                  ),
-                                                );
-                                              }).catchError((error) {
-                                                print("Error deleting movie: $error");
-                                              });
-                                            },
-                                            child:  Text('Delete ${select}'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
-                                icon: const Icon(Icons.remove_red_eye),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MyImagePickerScreen(
-                                        movieId: movies[index].id,
-                                        selectId: select.toString(),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(Icons.person),
-                              )
-                            ],
-                          ),
-                        ),
-                        leading: imageUrl.isNotEmpty
-                            ? Image.network(imageUrl)
-                            : const Center(
-                          child: SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
                       );
-                    },
-                  ),
+                    });
+                  },
                 );
               },
             ),
@@ -496,40 +323,48 @@ class _MovieListPageState extends State<MovieListPage> {
         SingleChildScrollView(
           child: Column(
             children: [
-              DropdownButtonFormField<String>(
-                alignment: Alignment.center,
-                isExpanded: true,
-                hint: Center(child: const Text("Choose")),
-                value: select,
-                icon: const Icon(Icons.arrow_drop_down),
-                style: const TextStyle(color: Colors.black),
-                // underline: Container(
-                //   height: 2,
-                //   color: Colors.black,
-                // ),
-                items: items.map((String items) {
-                  return DropdownMenuItem(
-                    alignment: Alignment.center,
-                    value: items,
-                    child: Center(child: Text(items)),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    select = newValue!;
-                    print("val$select");
-                  });
-                },
+              Container(
+                width: 200,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black), // Add black outline border
+                  borderRadius: BorderRadius.circular(10.0), // Optional: Add border radius for rounded corners
+                ),
+                child: DropdownButtonFormField<String>(
+                  alignment: Alignment.center,
+                  isExpanded: true,
+                  hint: Center(child: const Text("Choose")),
+                  value: select,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                    border: InputBorder.none, // Remove default border
+                  ),
+                  items: items.map((String items) {
+                    return DropdownMenuItem(
+                      alignment: Alignment.center,
+                      value: items,
+                      child: Center(child: Text(items)),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      select = newValue!;
+                      print("val$select");
+                    });
+                  },
+                ),
               ),
+
               StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection(select.toString()).snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
-          
+
                     List<QueryDocumentSnapshot> movies = snapshot.data!.docs;
-          
+
                     return RefreshIndicator(
                         onRefresh: refreshData,
                         child: ListView.builder(
@@ -539,7 +374,7 @@ class _MovieListPageState extends State<MovieListPage> {
                             itemBuilder: (context, index) {
                               var movieData =
                               movies[index].data() as Map<String, dynamic>?;
-          
+
                               if (movieData == null) {
                                 return const ListTile(
                                   title: Text("Invalid Movie Data"),
@@ -552,7 +387,7 @@ class _MovieListPageState extends State<MovieListPage> {
                               String ticketPrice =
                                   movieData['ticket_price']?.toString() ?? "0.0";
                               String imageUrl = movieData['image_url'] ?? '';
-          
+
                               if (name.isEmpty || description.isEmpty) {
                                 return const ListTile(
                                   title: Text("Invalid Movie Data"),
@@ -561,7 +396,7 @@ class _MovieListPageState extends State<MovieListPage> {
                               }
                               return ListTile(
                                 title: Text(name),
-                                subtitle: Text(description),
+                                subtitle: Text(''),
                                 trailing: Container(
                                   width: 100,
                                   child: Row(
@@ -587,7 +422,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                 final ratingController =
                                                 TextEditingController(
                                                     text: movieData['rating'].toString());
-          
+
                                                 return AlertDialog(
                                                   scrollable: true,
                                                   title: const Text('Edit Movie'),
@@ -620,7 +455,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                             labelText: 'Rating'),
                                                         keyboardType: TextInputType.number,
                                                       ),
-          
+
                                                       ElevatedButton(
                                                         onPressed: () {
                                                           Navigator.of(context).pop();
@@ -635,7 +470,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                     ElevatedButton(
                                                       onPressed: () async {
                                                         Navigator.of(context).pop();
-          
+
                                                         await FirebaseFirestore
                                                             .instance
                                                             .collection(select.toString())
@@ -672,7 +507,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                           ScaffoldMessenger.of(
                                                               context)
                                                               .showSnackBar(
-                                                             SnackBar(
+                                                            SnackBar(
                                                               content: Text(
                                                                   '$select deleted successfully!'),
                                                             ),
@@ -685,82 +520,26 @@ class _MovieListPageState extends State<MovieListPage> {
                                                       child:  Text('Delete $select'),
                                                     ),
                                                   ],
-                                                ),
-                                                actions: [
-                                                  ElevatedButton(
-                                                    onPressed: () async {
-
-
-                                                      await FirebaseFirestore
-                                                          .instance
-                                                          .collection(select.toString())
-                                                          .doc(movies[index].id)
-                                                          .update({
-                                                        'name': nameController.text,
-                                                        'description': descriptionController.text,
-                                                        'ticket_price': double.parse(priceController.text),
-                                                        'Cast': castList,
-                                                        'rating': movieData['rating'] ?? 0,
-                                                        'image_url' : imageUrl,
-                                                      }).then((_) {
-                                                        ScaffoldMessenger.of(
-                                                            context)
-                                                            .showSnackBar(
-                                                          const SnackBar(
-                                                            content: Text(
-                                                                'Movie updated successfully!'),
-                                                          ),
-                                                        );
-                                                      }).catchError((error) {
-                                                        print(
-                                                            "Error updating movie: $error");
-                                                      });
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                    child: Text('Update $select'),
-                                                  ),
-                                                  ElevatedButton(
-                                                    onPressed: () {
-                                                      FirebaseFirestore.instance
-                                                          .collection(select.toString())
-                                                          .doc(movies[index].id)
-                                                          .delete()
-                                                          .then((_) {
-                                                        ScaffoldMessenger.of(
-                                                            context)
-                                                            .showSnackBar(
-                                                           SnackBar(
-                                                            content: Text(
-                                                                '$select deleted successfully!'),
-                                                          ),
-                                                        );
-                                                      }).catchError((error) {
-                                                        print(
-                                                            "Error deleting movie: $error");
-                                                      });
-                                                    },
-                                                    child:  Text('Delete $select'),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        icon: const Icon(Icons.remove_red_eye)),
-                                    IconButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    MyImagePickerScreen(
-                                                      movieId: movies[index].id,
-                                                      selectId: select.toString(),
-                                                    )),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.person))
-                                  ],
+                                                );
+                                              },
+                                            );
+                                          },
+                                          icon: const Icon(Icons.remove_red_eye)),
+                                      IconButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      MyImagePickerScreen(
+                                                        movieId: movies[index].id,
+                                                        selectId: select.toString(),
+                                                      )),
+                                            );
+                                          },
+                                          icon: const Icon(Icons.person))
+                                    ],
+                                  ),
                                 ),
                                 leading: imageUrl.isNotEmpty
                                     ? Image.network(imageUrl)
@@ -778,4 +557,5 @@ class _MovieListPageState extends State<MovieListPage> {
           ),
         ));
   }
+
 }

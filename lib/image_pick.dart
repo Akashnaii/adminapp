@@ -155,10 +155,10 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Enter Image Name'),
+          title: Text('Enter Cast Name'),
           content: TextField(
             controller: updateNameController,
-            decoration: InputDecoration(labelText: 'Image Name'),
+            decoration: InputDecoration(labelText: 'Cast Name'),
           ),
           actions: [
             ElevatedButton(
@@ -278,9 +278,10 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Multiple Image Picker'),
+        title: Text('Cast'),
       ),
-      body:isLoading? Center(child: CircularProgressIndicator()) : Column(
+      body:isLoading? Center(child: CircularProgressIndicator())
+          : Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Row(
@@ -290,7 +291,7 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: _pickImage,
-                  child: Text('Pick Image'),
+                  child: Text('Add Cast'),
                 ),
               ),
               SizedBox(width: 10,),
@@ -314,8 +315,6 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
             child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
                   .collection(widget.selectId)
-
-
                   .doc(widget.movieId)
                   .snapshots(),
               builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
@@ -352,16 +351,28 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
                           // SizedBox(width: 6,),
                           Column(
                             children: [
-                              Image.network(
-                                castData[index]['cast_image'],
-                                height: 80,
+                              Container(
                                 width: 80,
-                                fit: BoxFit.fill,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.black),
+                                  // Add any additional styling you need for the container here
+                                ),
+                                child: ClipOval(
+                                  child: Image.network(
+                                    castData[index]['cast_image'],
+                                    fit: BoxFit.cover,
+                                    width: 80,
+                                    height: 80,
+                                  ),
+                                ),
                               ),
                               SizedBox(height: 10,),
                               Text(castData[index]['cast_name']),
                             ],
                           ),
+
                           Spacer(),
                           ElevatedButton(
                             onPressed: () {
@@ -369,7 +380,7 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
                             },
                             child: Text('Delete'),
                           ),
-                          SizedBox(width: 6,),
+                          SizedBox(width: 20,),
                           ElevatedButton(
                             onPressed: () {
                               _updatepickImage(index,castData[index]['cast_name']);
