@@ -42,6 +42,7 @@ class _MovieListPageState extends State<MovieListPage> {
   var items = ['movies', 'Standup commedy', 'Concert'];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController  locationController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController ratingController = TextEditingController();
   File? _selectedImage;
@@ -199,29 +200,35 @@ class _MovieListPageState extends State<MovieListPage> {
                               _selectedImage != null
                                   ? Image.file(_selectedImage!)
                                   : const SizedBox.shrink(),
-                              DropdownButtonFormField<String>(
-                                isExpanded: true,
-                                hint: const Text("Choose"),
-                                value: dropdownvalue,
-                                icon: const Icon(Icons.arrow_drop_down),
-                                style: const TextStyle(color: Colors.black),
-                                // underline: Container(
-                                //   height: 2,
-                                //   color: Colors.black,
-                                // ),
-                                items: items.map((String items) {
-                                  return DropdownMenuItem(
-                                    alignment: Alignment.center,
-                                    value: items,
-                                    child: Text(items),
-                                  );
-                                }).toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    dropdownvalue = newValue!;
-                                    print("val$dropdownvalue");
-                                  });
-                                },
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.black), // Black outline border
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  hint: const Text("Choose"),
+                                  value: dropdownvalue,
+                                  icon: const Icon(Icons.arrow_drop_down),
+                                  style: const TextStyle(color: Colors.black),
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                    border: InputBorder.none, // Remove default border
+                                  ),
+                                  items: items.map((String items) {
+                                    return DropdownMenuItem(
+                                      alignment: Alignment.center,
+                                      value: items,
+                                      child: Text(items),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      dropdownvalue = newValue!;
+                                      print("val$dropdownvalue");
+                                    });
+                                  },
+                                ),
                               ),
                               TextFormField(
                                 controller: nameController,
@@ -310,31 +317,39 @@ class _MovieListPageState extends State<MovieListPage> {
         SingleChildScrollView(
           child: Column(
             children: [
-              DropdownButtonFormField<String>(
-                alignment: Alignment.center,
-                isExpanded: true,
-                hint: Center(child: const Text("Choose")),
-                value: select,
-                icon: const Icon(Icons.arrow_drop_down),
-                style: const TextStyle(color: Colors.black),
-                // underline: Container(
-                //   height: 2,
-                //   color: Colors.black,
-                // ),
-                items: items.map((String items) {
-                  return DropdownMenuItem(
-                    alignment: Alignment.center,
-                    value: items,
-                    child: Center(child: Text(items)),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    select = newValue!;
-                    print("val$select");
-                  });
-                },
+              Container(
+                width: 200,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black), // Add black outline border
+                  borderRadius: BorderRadius.circular(10.0), // Optional: Add border radius for rounded corners
+                ),
+                child: DropdownButtonFormField<String>(
+                  alignment: Alignment.center,
+                  isExpanded: true,
+                  hint: Center(child: const Text("Choose")),
+                  value: select,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                    border: InputBorder.none, // Remove default border
+                  ),
+                  items: items.map((String items) {
+                    return DropdownMenuItem(
+                      alignment: Alignment.center,
+                      value: items,
+                      child: Center(child: Text(items)),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      select = newValue!;
+                      print("val$select");
+                    });
+                  },
+                ),
               ),
+
               StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection(select.toString()).snapshots(),
                   builder: (context, snapshot) {
