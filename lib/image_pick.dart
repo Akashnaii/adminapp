@@ -162,6 +162,7 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
           ),
           actions: [
             ElevatedButton(
+
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -192,17 +193,35 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
           content: Text("Are you sure you want delete this Cast?"),
           actions: [
             ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+              ),
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Cancel'),
+              child: Text('Cancel',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.normal,
+                  color: Colors.white,
+                ),
+              ),
             ),
             ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+              ),
               onPressed: () async {
                 _deleteImage(index);
                 Navigator.pop(context);
               },
-              child: Text('delete'),
+              child: Text('delete',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.normal,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );
@@ -290,13 +309,25 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
               SizedBox(width: 10,),
               Expanded(
                 child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                  ),
                   onPressed: _pickImage,
-                  child: Text('Add Cast'),
+                  child: Text('Add Cast',
+                    style: TextStyle(
+                    fontSize: 17,
+                    fontStyle: FontStyle.normal,
+                    color: Colors.white,
+                  ),
+                  ),
                 ),
               ),
               SizedBox(width: 10,),
               Expanded(
                 child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                  ),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -305,7 +336,13 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
                         ));
                     Navigator.pop(context);
                   },
-                  child: Text('Submit'),
+                  child: Text('Submit',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontStyle: FontStyle.normal,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(width: 10,),
@@ -345,15 +382,13 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Text("${index+1}."),
-                          // SizedBox(width: 6,),
                           Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                width: 80,
-                                height: 80,
+                                width: MediaQuery.of(context).size.width*0.2,
+                                height:  MediaQuery.of(context).size.height*0.09,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(color: Colors.black),
@@ -369,25 +404,46 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
                                 ),
                               ),
                               SizedBox(height: 10,),
-                              Text(castData[index]['cast_name']),
+                              SizedBox(
+                                  width: 75,
+                                  child: Text(castData[index]['cast_name'] , textAlign: TextAlign.center,)),
                             ],
                           ),
-
-                          Spacer(),
+                          SizedBox(width: 15,),
                           ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                            ),
                             onPressed: () {
                               _deleteshowNameInputDialog(index);
                             },
-                            child: Text('Delete'),
+                            child: Text('Delete',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontStyle: FontStyle.normal,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                          SizedBox(width: 20,),
+                          SizedBox(width: 15,),
                           ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+
+                            ),
                             onPressed: () {
                               _updatepickImage(index,castData[index]['cast_name']);
                             },
-                            child: Text('Update'),
+                            child: Text('Update',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontStyle: FontStyle.normal,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                          SizedBox(width: 10,)
+                          SizedBox(width: 10,),
+
                         ],
                       ),
                     );
