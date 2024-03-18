@@ -48,19 +48,25 @@ class _MovieListPageState extends State<MovieListPage> {
   }
 
   Future<void> _pickImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
 
-    if (result != null) {
-      PlatformFile file = result.files.first;
-      String filePath = file.path!;
-      File pickedImage = File(filePath);
+      if (result != null) {
+        PlatformFile file = result.files.first;
+        String filePath = file.path!;
+        File pickedImage = File(filePath);
 
-      setState(() {
-        _selectedImage = pickedImage;
-      });
+        setState(() {
+          _selectedImage = pickedImage;
+          print("_selectedImage: $_selectedImage");
+        });
+      }
+    }
+    catch(e) {
+      print("Error picking file: $e");
     }
   }
 
@@ -233,6 +239,9 @@ class _MovieListPageState extends State<MovieListPage> {
             IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () {
+                  setState(() {
+
+
                   nameController.clear();
                   priceController.clear();
                   descriptionController.clear();
@@ -255,9 +264,7 @@ class _MovieListPageState extends State<MovieListPage> {
                             content: Column(
                               mainAxisSize: MainAxisSize.max,
                               children: [
-                                _selectedImage != null
-                                    ? Image.file(_selectedImage!)
-                                    : const SizedBox.shrink(),
+
                                 Container(
                                   decoration: BoxDecoration(
                                     border: Border.all(
@@ -292,6 +299,10 @@ class _MovieListPageState extends State<MovieListPage> {
                                     },
                                   ),
                                 ),
+                                SizedBox(height: 10,),
+                                _selectedImage != null
+                                    ? Image.file(_selectedImage!)
+                                    : const SizedBox.shrink(),
                                 TextFormField(
                                   controller: nameController,
                                   decoration:
@@ -409,7 +420,16 @@ class _MovieListPageState extends State<MovieListPage> {
                                         MaterialStateProperty.all<Color>(
                                             Colors.black),
                                       ),
-                                      onPressed: _pickImage,
+                                      onPressed: ()
+                                      {
+                                        setState((){
+                                          _pickImage().then((value){
+                                            setState((){
+                                              _selectedImage;
+                                            });
+                                          });
+                                        });
+                                      },
                                       child: const Text(
                                         'Pick Image',
                                         style: TextStyle(
@@ -469,6 +489,8 @@ class _MovieListPageState extends State<MovieListPage> {
                         )
                     );
                 }
+                      );
+  }
             ),
           ],
         ),
