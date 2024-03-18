@@ -72,21 +72,27 @@ class _MovieListPageState extends State<MovieListPage> {
   }
 
   Future<void> _pickImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
 
-    if (result != null) {
-      PlatformFile file = result.files.first;
-      String filePath = file.path!;
-      File pickedImage = File(filePath);
+      if (result != null) {
+        PlatformFile file = result.files.first;
+        String filePath = file.path!;
+        File pickedImage = File(filePath);
 
-      setState(() {
-        _selectedImage = pickedImage;
-      });
+        setState(() {
+          _selectedImage = pickedImage;
+          print("_selectedImage: $_selectedImage");
+        });
+      }
     }
+    catch(e) {
+      print("Error picking file: $e");
   }
+    }
 
   Future<void> _uploadImage(BuildContext context, String movieId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -242,233 +248,243 @@ if(select == 'Concert') {
               IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () {
-                  nameController.clear();
-                  priceController.clear();
-                  descriptionController.clear();
-                  ratingController.clear();
-                  locationController.clear();
-                  dateController.clear();
-                  _timeController.clear();
-                  _selectedImage = null;
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return StatefulBuilder(builder: (context, setState) {
-                        return SingleChildScrollView(
-                          child: AlertDialog(
-                            scrollable: true,
-                            title: const Text(
-                              'Select Show',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                _selectedImage != null
-                                    ? Image.file(_selectedImage!)
-                                    : const SizedBox.shrink(),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color:
-                                            Colors.black), // Black outline border
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  child: DropdownButtonFormField<String>(
-                                    isExpanded: true,
-                                    hint: const Text("Choose"),
-                                    value: dropdownvalue,
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    style: const TextStyle(color: Colors.black),
-                                    decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 16.0, vertical: 10.0),
-                                      border: InputBorder
-                                          .none, // Remove default border
+                  setState(() {
+                    nameController.clear();
+                    priceController.clear();
+                    descriptionController.clear();
+                    ratingController.clear();
+                    locationController.clear();
+                    dateController.clear();
+                    _timeController.clear();
+                    _selectedImage = null;
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return StatefulBuilder(builder: (context, setState) {
+                          return SingleChildScrollView(
+                            child: AlertDialog(
+                              scrollable: true,
+                              title: const Text(
+                                'Select Show',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color:
+                                          Colors.black), // Black outline border
+                                      borderRadius: BorderRadius.circular(10.0),
                                     ),
-                                    items: items.map((String items) {
-                                      return DropdownMenuItem(
-                                        alignment: Alignment.center,
-                                        value: items,
-                                        child: Text(items),
-                                      );
-                                    }).toList(),
-                                    onChanged: (String? newValue) {
-                                      setState(() {
-                                        dropdownvalue = newValue!;
-                                        print("val$dropdownvalue");
-                                      });
-                                    },
-                                  ),
-                                ),
-                                TextFormField(
-                                  controller: nameController,
-                                  decoration:
-                                      const InputDecoration(labelText: 'Title'),
-                                ),
-                                TextFormField(
-                                  minLines: 1,
-                                  maxLines: 4,
-                                  controller: descriptionController,
-                                  decoration: const InputDecoration(
-                                      labelText: 'Description'),
-                                ),
-                                Visibility(
-                                  visible: dropdownvalue == "Concert" ||
-                                      dropdownvalue == "Standup commedy",
-                                  child: TextFormField(
-                                    controller: locationController,
-                                    decoration: const InputDecoration(
-                                        labelText: 'Location'),
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: dropdownvalue == 'Concert' ||
-                                      dropdownvalue == 'Standup commedy',
-                                  child: TextField(
-                                    onTap: () async {
-                                      DateTime? pickedDate = await showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime.now(),
-                                          firstDate: DateTime(1950),
-                                          //DateTime.now() - not to allow to choose before today.
-                                          lastDate: DateTime(2100));
-
-                                      if (pickedDate != null) {
-                                        print(
-                                            pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
-                                        String formattedDate =
-                                            DateFormat('yyyy-MM-dd')
-                                                .format(pickedDate);
-                                        print(
-                                            formattedDate); //formatted date output using intl package =>  2021-03-16
-                                        setState(() {
-                                          dateController.text =
-                                              formattedDate; //set output date to TextField value.
-                                        });
-                                      } else {}
-                                    },
-                                    minLines: 1,
-                                    maxLines: 2,
-                                    readOnly: true,
-                                    controller: dateController,
-                                    decoration: InputDecoration(
-                                      labelText: 'Select Date for $dropdownvalue',
-                                    ),
-                                  ),
-                                ),
-                                Visibility(
-                                  visible: dropdownvalue == 'Concert' ||
-                                      dropdownvalue == 'Standup commedy',
-                                  child: TextFormField(
-                                    controller:
-                                    _timeController,
-                                    onTap: () =>
-                                        _selectTime(
-                                            context),
-                                    readOnly: true,
-                                    decoration:
-                                    InputDecoration(
-                                      labelText:
-                                      'Select Time',
-                                    ),
-                                  ),
-                                ),
-
-                                TextFormField(
-                                  controller: priceController,
-                                  decoration: const InputDecoration(
-                                      labelText: 'Ticket Price'),
-                                  keyboardType: TextInputType.number,
-                                ),
-                                TextFormField(
-                                  controller:
-                                  ratingController,
-                                  decoration:
-                                  const InputDecoration(
-                                    labelText: 'Rating',
-                                  ),
-                                  keyboardType: TextInputType
-                                      .numberWithOptions(
-                                      decimal: true),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter
-                                        .allow(
-                                      RegExp(
-                                          r'^(5(\.0)?|[0-4](\.\d?)?)$'),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 30,
-                                ),
-                                Row(
-                                  children: [
-                                    const Spacer(),
-                                    ElevatedButton(
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStateProperty.all<Color>(
-                                                Colors.black),
+                                    child: DropdownButtonFormField<String>(
+                                      isExpanded: true,
+                                      hint: const Text("Choose"),
+                                      value: dropdownvalue,
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      style: const TextStyle(color: Colors.black),
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 16.0, vertical: 10.0),
+                                        border: InputBorder.none, // Remove default border
                                       ),
-                                      onPressed: _pickImage,
-                                      child: const Text(
-                                        'Pick Image',
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontStyle: FontStyle.normal,
-                                          color: Colors.white,
+                                      items: items.map((String items) {
+                                        return DropdownMenuItem(
+                                          alignment: Alignment.center,
+                                          value: items,
+                                          child: Text(items),
+                                        );
+                                      }).toList(),
+                                      onChanged: (String? newValue) {
+                                        setState(() {
+                                          dropdownvalue = newValue!;
+                                          print("val$dropdownvalue");
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  _selectedImage != null
+                                      ? Image.file(_selectedImage!)
+                                      : const SizedBox.shrink(),
+                                  TextFormField(
+                                    controller: nameController,
+                                    decoration:
+                                    const InputDecoration(labelText: 'Title'),
+                                  ),
+                                  TextFormField(
+                                    minLines: 1,
+                                    maxLines: 4,
+                                    controller: descriptionController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Description'),
+                                  ),
+                                  Visibility(
+                                    visible: dropdownvalue == "Concert" ||
+                                        dropdownvalue == "Standup commedy",
+                                    child: TextFormField(
+                                      controller: locationController,
+                                      decoration: const InputDecoration(
+                                          labelText: 'Location'),
+                                    ),
+                                  ),
+                                  Visibility(
+                                    visible: dropdownvalue == 'Concert' ||
+                                        dropdownvalue == 'Standup commedy',
+                                    child: TextField(
+                                      onTap: () async {
+                                        DateTime? pickedDate = await showDatePicker(
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime(1950),
+                                            //DateTime.now() - not to allow to choose before today.
+                                            lastDate: DateTime(2100));
+
+                                        if (pickedDate != null) {
+                                          print(
+                                              pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                          String formattedDate =
+                                          DateFormat('yyyy-MM-dd')
+                                              .format(pickedDate);
+                                          print(
+                                              formattedDate); //formatted date output using intl package =>  2021-03-16
+                                          setState(() {
+                                            dateController.text =
+                                                formattedDate; //set output date to TextField value.
+                                          });
+                                        } else {}
+                                      },
+                                      minLines: 1,
+                                      maxLines: 2,
+                                      readOnly: true,
+                                      controller: dateController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Select Date for $dropdownvalue',
+                                      ),
+                                    ),
+                                  ),
+                                  Visibility(
+                                    visible: dropdownvalue == 'Concert' ||
+                                        dropdownvalue == 'Standup commedy',
+                                    child: TextFormField(
+                                      controller:
+                                      _timeController,
+                                      onTap: () =>
+                                          _selectTime(
+                                              context),
+                                      readOnly: true,
+                                      decoration:
+                                      InputDecoration(
+                                        labelText:
+                                        'Select Time',
+                                      ),
+                                    ),
+                                  ),
+
+                                  TextFormField(
+                                    controller: priceController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Ticket Price'),
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                  TextFormField(
+                                    controller:
+                                    ratingController,
+                                    decoration:
+                                    const InputDecoration(
+                                      labelText: 'Rating',
+                                    ),
+                                    keyboardType: TextInputType
+                                        .numberWithOptions(
+                                        decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter
+                                          .allow(
+                                        RegExp(
+                                            r'^(5(\.0)?|[0-4](\.\d?)?)$'),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 30,
+                                  ),
+
+                                  Row(
+                                    children: [
+                                      const Spacer(),
+                                      ElevatedButton(
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.black),
+                                        ),
+                                        onPressed:  (){
+                                          setState((){
+                                            _pickImage().then((value){
+                                              setState((){
+                                                _selectedImage;
+                                              });
+                                            });
+                                          });
+                                        },
+                                        child: const Text(
+                                          'Pick Image',
+                                          style: TextStyle(
+                                            fontSize: 17,
+                                            fontStyle: FontStyle.normal,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                ElevatedButton(
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                    MaterialStateProperty.all<Color>(
+                                        Colors.black),
+                                  ),
+                                  onPressed: () async {
+                                    setState((){
+                                      _isLoading = true;
+                                    });
+
+                                    _addMovie(context);
+
+                                    setState(() {
+                                      isloading = true;
+                                      Navigator.of(context).pop();
+                                    });
+                                  },
+                                  child: const Text(
+                                    'Add Show',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontStyle: FontStyle.normal,
+                                      color: Colors.white,
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
-                            actions: [
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.black),
-                                ),
-                                onPressed: () async {
-                                  setState((){
-                                    _isLoading = true;
-                                  });
+                          );
+                        });
 
-                                _addMovie(context);
-
-                                  setState(() {
-                                    isloading = true;
-                                    Navigator.of(context).pop();
-                                  });
-                                },
-                                child: const Text(
-                                  'Add Show',
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontStyle: FontStyle.normal,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      });
-
-                    },
-                  );
-                      if (_isLoading)
-                  Container(
-                      color: Colors.black.withOpacity(0.5),
-                      child: Center(
-                      child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                  )
-                      )
-                  );
+                      },
+                    );
+                    if (_isLoading)
+                      Container(
+                          color: Colors.black.withOpacity(0.5),
+                          child: Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                              )
+                          )
+                      );
+                  });
                 }
               ),
             ],
