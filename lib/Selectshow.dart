@@ -151,9 +151,6 @@ class _MovieListPageState extends State<MovieListPage> {
           'date': dateController.text,
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$dropdownvalue added successfully!')),
-        );
 
         nameController.clear();
         descriptionController.clear();
@@ -166,7 +163,11 @@ class _MovieListPageState extends State<MovieListPage> {
           castList.clear();
         });
         ratingController.clear();
-      } else {
+
+
+      }
+      else
+      {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select atleast one show.')),
         );
@@ -174,7 +175,8 @@ class _MovieListPageState extends State<MovieListPage> {
       setState(() {
         _isLoading = false;
       });
-    } catch (error) {
+    }
+    catch (error) {
       print("Error adding movie: $error");
       setState(() {
         _isLoading = false;
@@ -240,8 +242,6 @@ class _MovieListPageState extends State<MovieListPage> {
                 icon: const Icon(Icons.add),
                 onPressed: () {
                   setState(() {
-
-
                   nameController.clear();
                   priceController.clear();
                   descriptionController.clear();
@@ -289,6 +289,20 @@ class _MovieListPageState extends State<MovieListPage> {
                                         alignment: Alignment.center,
                                         value: items,
                                         child: Text(items),
+                                        onTap: ()
+                                        {
+                                          nameController.clear();
+                                          descriptionController.clear();
+                                          priceController.clear();
+                                          locationController.clear();
+                                          _timeController.clear();
+                                          dateController.clear();
+                                          setState(() {
+                                            _selectedImage = null;
+                                            castList.clear();
+                                          });
+                                          ratingController.clear();
+                                        },
                                       );
                                     }).toList(),
                                     onChanged: (String? newValue) {
@@ -459,8 +473,15 @@ class _MovieListPageState extends State<MovieListPage> {
                                       _isLoading = true;
                                       _addMovie(context);
                                       Navigator.of(context).pop();
+
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('$dropdownvalue added successfully!')),
+                                      );
+
+
                                     });
                                   }
+
 
                                 },
                                 child: Text(
