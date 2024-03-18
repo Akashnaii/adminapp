@@ -38,6 +38,7 @@ class MovieListPage extends StatefulWidget {
 
 class _MovieListPageState extends State<MovieListPage> {
   bool isloading = false;
+  bool _isLoading = false;
   String? dropdownvalue;
   String? select = 'movies';
 
@@ -227,254 +228,251 @@ if(select == 'Concert') {
     return Scaffold(
         key: _scaffoldKey,
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 2,
-          foregroundColor: Colors.black,
-          centerTitle: true,
-          title: const Text("MovieMate",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
-                  fontSize: 25)),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                nameController.clear();
-                priceController.clear();
-                descriptionController.clear();
-                ratingController.clear();
-                locationController.clear();
-                dateController.clear();
-                _timeController.clear();
-                _selectedImage = null;
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return StatefulBuilder(builder: (context, setState) {
-                      return SingleChildScrollView(
-                        child: AlertDialog(
-                          scrollable: true,
-                          title: const Text(
-                            'Select Show',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              _selectedImage != null
-                                  ? Image.file(_selectedImage!)
-                                  : const SizedBox.shrink(),
-                              Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color:
-                                          Colors.black), // Black outline border
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                child: DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  hint: const Text("Choose"),
-                                  value: dropdownvalue,
-                                  icon: const Icon(Icons.arrow_drop_down),
-                                  style: const TextStyle(color: Colors.black),
-                                  decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 16.0, vertical: 10.0),
-                                    border: InputBorder
-                                        .none, // Remove default border
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 2,
+            foregroundColor: Colors.black,
+            centerTitle: true,
+            title: const Text("MovieMate",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 25)),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () {
+                  nameController.clear();
+                  priceController.clear();
+                  descriptionController.clear();
+                  ratingController.clear();
+                  locationController.clear();
+                  dateController.clear();
+                  _timeController.clear();
+                  _selectedImage = null;
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return StatefulBuilder(builder: (context, setState) {
+                        return SingleChildScrollView(
+                          child: AlertDialog(
+                            scrollable: true,
+                            title: const Text(
+                              'Select Show',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                _selectedImage != null
+                                    ? Image.file(_selectedImage!)
+                                    : const SizedBox.shrink(),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color:
+                                            Colors.black), // Black outline border
+                                    borderRadius: BorderRadius.circular(10.0),
                                   ),
-                                  items: items.map((String items) {
-                                    return DropdownMenuItem(
-                                      alignment: Alignment.center,
-                                      value: items,
-                                      child: Text(items),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      dropdownvalue = newValue!;
-                                      print("val$dropdownvalue");
-                                    });
-                                  },
-                                ),
-                              ),
-                              TextFormField(
-                                controller: nameController,
-                                decoration:
-                                    const InputDecoration(labelText: 'Title'),
-                              ),
-                              TextFormField(
-                                minLines: 1,
-                                maxLines: 4,
-                                controller: descriptionController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Description'),
-                              ),
-                              Visibility(
-                                visible: dropdownvalue == "Concert" ||
-                                    dropdownvalue == "Standup commedy",
-                                child: TextFormField(
-                                  controller: locationController,
-                                  decoration: const InputDecoration(
-                                      labelText: 'Location'),
-                                ),
-                              ),
-                              Visibility(
-                                visible: dropdownvalue == 'Concert' ||
-                                    dropdownvalue == 'Standup commedy',
-                                child: TextField(
-                                  onTap: () async {
-                                    DateTime? pickedDate = await showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime(1950),
-                                        //DateTime.now() - not to allow to choose before today.
-                                        lastDate: DateTime(2100));
-
-                                    if (pickedDate != null) {
-                                      print(
-                                          pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
-                                      String formattedDate =
-                                          DateFormat('yyyy-MM-dd')
-                                              .format(pickedDate);
-                                      print(
-                                          formattedDate); //formatted date output using intl package =>  2021-03-16
+                                  child: DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    hint: const Text("Choose"),
+                                    value: dropdownvalue,
+                                    icon: const Icon(Icons.arrow_drop_down),
+                                    style: const TextStyle(color: Colors.black),
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 16.0, vertical: 10.0),
+                                      border: InputBorder
+                                          .none, // Remove default border
+                                    ),
+                                    items: items.map((String items) {
+                                      return DropdownMenuItem(
+                                        alignment: Alignment.center,
+                                        value: items,
+                                        child: Text(items),
+                                      );
+                                    }).toList(),
+                                    onChanged: (String? newValue) {
                                       setState(() {
-                                        dateController.text =
-                                            formattedDate; //set output date to TextField value.
+                                        dropdownvalue = newValue!;
+                                        print("val$dropdownvalue");
                                       });
-                                    } else {}
-                                  },
-                                  minLines: 1,
-                                  maxLines: 2,
-                                  readOnly: true,
-                                  controller: dateController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Select Date for $dropdownvalue',
+                                    },
                                   ),
                                 ),
-                              ),
-                              Visibility(
-                                visible: dropdownvalue == 'Concert' ||
-                                    dropdownvalue == 'Standup commedy',
-                                child: TextFormField(
-                                  controller:
-                                  _timeController,
-                                  onTap: () =>
-                                      _selectTime(
-                                          context),
-                                  readOnly: true,
+                                TextFormField(
+                                  controller: nameController,
                                   decoration:
-                                  InputDecoration(
-                                    labelText:
-                                    'Select Time',
+                                      const InputDecoration(labelText: 'Title'),
+                                ),
+                                TextFormField(
+                                  minLines: 1,
+                                  maxLines: 4,
+                                  controller: descriptionController,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Description'),
+                                ),
+                                Visibility(
+                                  visible: dropdownvalue == "Concert" ||
+                                      dropdownvalue == "Standup commedy",
+                                  child: TextFormField(
+                                    controller: locationController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Location'),
                                   ),
                                 ),
-                              ),
+                                Visibility(
+                                  visible: dropdownvalue == 'Concert' ||
+                                      dropdownvalue == 'Standup commedy',
+                                  child: TextField(
+                                    onTap: () async {
+                                      DateTime? pickedDate = await showDatePicker(
+                                          context: context,
+                                          initialDate: DateTime.now(),
+                                          firstDate: DateTime(1950),
+                                          //DateTime.now() - not to allow to choose before today.
+                                          lastDate: DateTime(2100));
 
-                              TextFormField(
-                                controller: priceController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Ticket Price'),
-                                keyboardType: TextInputType.number,
-                              ),
-                              TextFormField(
-                                key: _bookFormKey,
-                                controller: ratingController,
-                                decoration:
-                                    const InputDecoration(labelText: 'Rating'),
-                                keyboardType: TextInputType.number,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Please enter a rating'),
-                                      ),
-                                    );
-                                    return 'Please enter a rating';
-                                  }
-                                  final rating = double.tryParse(value);
-                                  if (rating == null) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content:
-                                            Text('Please enter a valid number'),
-                                      ),
-                                    );
-                                    return 'Please enter a valid number';
-                                  }
-                                  if (rating < 0 || rating > 5) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Rating must be between 0 and 5'),
-                                      ),
-                                    );
-                                    return 'Rating must be between 0 and 5';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              SizedBox(
-                                height: 30,
-                              ),
-                              Row(
-                                children: [
-                                  const Spacer(),
-                                  ElevatedButton(
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              Colors.black),
-                                    ),
-                                    onPressed: _pickImage,
-                                    child: const Text(
-                                      'Pick Image',
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontStyle: FontStyle.normal,
-                                        color: Colors.white,
-                                      ),
+                                      if (pickedDate != null) {
+                                        print(
+                                            pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                        String formattedDate =
+                                            DateFormat('yyyy-MM-dd')
+                                                .format(pickedDate);
+                                        print(
+                                            formattedDate); //formatted date output using intl package =>  2021-03-16
+                                        setState(() {
+                                          dateController.text =
+                                              formattedDate; //set output date to TextField value.
+                                        });
+                                      } else {}
+                                    },
+                                    minLines: 1,
+                                    maxLines: 2,
+                                    readOnly: true,
+                                    controller: dateController,
+                                    decoration: InputDecoration(
+                                      labelText: 'Select Date for $dropdownvalue',
                                     ),
                                   ),
-                                ],
+                                ),
+                                Visibility(
+                                  visible: dropdownvalue == 'Concert' ||
+                                      dropdownvalue == 'Standup commedy',
+                                  child: TextFormField(
+                                    controller:
+                                    _timeController,
+                                    onTap: () =>
+                                        _selectTime(
+                                            context),
+                                    readOnly: true,
+                                    decoration:
+                                    InputDecoration(
+                                      labelText:
+                                      'Select Time',
+                                    ),
+                                  ),
+                                ),
+
+                                TextFormField(
+                                  controller: priceController,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Ticket Price'),
+                                  keyboardType: TextInputType.number,
+                                ),
+                                TextFormField(
+                                  controller:
+                                  ratingController,
+                                  decoration:
+                                  const InputDecoration(
+                                    labelText: 'Rating',
+                                  ),
+                                  keyboardType: TextInputType
+                                      .numberWithOptions(
+                                      decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter
+                                        .allow(
+                                      RegExp(
+                                          r'^(5(\.0)?|[0-4](\.\d?)?)$'),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 30,
+                                ),
+                                Row(
+                                  children: [
+                                    const Spacer(),
+                                    ElevatedButton(
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                Colors.black),
+                                      ),
+                                      onPressed: _pickImage,
+                                      child: const Text(
+                                        'Pick Image',
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontStyle: FontStyle.normal,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          Colors.black),
+                                ),
+                                onPressed: () async {
+                                  setState((){
+                                    _isLoading = true;
+                                  });
+
+                                _addMovie(context);
+
+                                  setState(() {
+                                    isloading = true;
+                                    Navigator.of(context).pop();
+                                  });
+                                },
+                                child: const Text(
+                                  'Add Show',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontStyle: FontStyle.normal,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                          actions: [
-                            ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        Colors.black),
-                              ),
-                              onPressed: () {
-                                _addMovie(context);
-                                setState(() {
-                                  Navigator.of(context).pop();
-                                });
-                              },
-                              child: const Text(
-                                'Add Show',
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontStyle: FontStyle.normal,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    });
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+                        );
+                      });
+
+                    },
+                  );
+                      if (_isLoading)
+                  Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Center(
+                      child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  )
+                      )
+                  );
+                }
+              ),
+            ],
+          ),
         body: Stack(
           children:
           [
@@ -773,65 +771,54 @@ if(select == 'Concert') {
                                                       ],
                                                     ),
                                                     actions: [
-                                                      ElevatedButton(
-                                                        style: ButtonStyle(
-                                                          backgroundColor:
-                                                              MaterialStateProperty
-                                                                  .all<Color>(
-                                                                      Colors
-                                                                          .black),
-                                                          // Replace this with your desired width and height
-                                                        ),
-                                                        onPressed: () async {
-                                                          await FirebaseFirestore
-                                                              .instance
-                                                              .collection(select
-                                                                  .toString())
-                                                              .doc(movies[index]
-                                                                  .id)
-                                                              .update({
-                                                            'name': nameController
-                                                                .text,
-                                                            'description':
-                                                                descriptionController
-                                                                    .text,
-                                                            'ticket_price':
-                                                                double.parse(
-                                                                    priceController
-                                                                        .text),
-                                                            'location':
-                                                                locationController
-                                                                    .text,
-                                                            'Cast': castList,
-                                                            'rating':
-                                                                ratingController
-                                                                    .text,
-                                                          }).then((_) {
-                                                            ScaffoldMessenger.of(
-                                                                    context)
-                                                                .showSnackBar(
-                                                              SnackBar(
-                                                                content: Text(
-                                                                    '$select updated successfully!'),
+                                                        Stack(
+                                                          children: [
+                                                            ElevatedButton(
+                                                              style: ButtonStyle(
+                                                                backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                                                // Replace this with your desired width and height
                                                               ),
-                                                            );
-                                                          }).catchError((error) {
-                                                            print(
-                                                                "Error updating movie: $error");
-                                                          });
-                                                          Navigator.of(context)
-                                                              .pop();
-                                                        },
-                                                        child: Text(
-                                                          'Update $select',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            fontStyle:
-                                                                FontStyle.normal,
-                                                            color: Colors.white,
-                                                          ),
+                                                              onPressed: () async {
+                                                                setState(() {
+                                                                  isloading = true; // Set loading to true when the button is clicked
+                                                                });
+
+                                                                await FirebaseFirestore.instance
+                                                                    .collection(select.toString())
+                                                                    .doc(movies[index].id)
+                                                                    .update({
+                                                                  'name': nameController.text,
+                                                                  'description': descriptionController.text,
+                                                                  'ticket_price': double.parse(priceController.text),
+                                                                  'location': locationController.text,
+                                                                  'Cast': castList,
+                                                                  'rating': ratingController.text,
+                                                                }).then((_) {
+                                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                                    SnackBar(
+                                                                      content: Text('$select updated successfully!'),
+                                                                    ),
+                                                                  );
+                                                                }).catchError((error) {
+                                                                  print("Error updating movie: $error");
+                                                                }).whenComplete(() {
+                                                                  setState(() {
+                                                                    isloading = false; // Set loading to false after the update is completed
+                                                                  });
+                                                                  Navigator.of(context).pop();
+                                                                });
+                                                              },
+                                                              child: Text(
+                                                                'Update $select',
+                                                                style: TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontStyle: FontStyle.normal,
+                                                                  color: Colors.white,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ),
                                                       ElevatedButton(
                                                         style: ButtonStyle(
                                                           backgroundColor:
@@ -917,7 +904,6 @@ if(select == 'Concert') {
           ),
     ]
         )
-
     );
   }
 }
