@@ -95,26 +95,44 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Enter Image Name'),
+          title: Text('Enter Cast Name'),
           content: TextField(
             controller: nameController,
-            decoration: InputDecoration(labelText: 'Image Name'),
+            decoration: InputDecoration(labelText: 'Cast   Name'),
           ),
           actions: [
             ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+              ),
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Cancel'),
+              child: Text('Cancel',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.normal,
+                  color: Colors.white,
+                ),
+              ),
             ),
             ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+              ),
               onPressed: () async {
                 if (nameController.text.isNotEmpty) {
                   addDocument(imagePath, nameController.text.trim());
                   Navigator.pop(context);
                 }
               },
-              child: Text('Save'),
+              child: Text('Save',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.normal,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ],
         );
