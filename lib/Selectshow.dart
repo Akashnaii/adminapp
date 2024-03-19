@@ -844,6 +844,8 @@ class _MovieListPageState extends State<MovieListPage> {
                                                               'location': locationController.text,
                                                               'Cast': castList,
                                                               'rating': ratingController.text,
+                                                              'selectedDate' : dateController.text,
+                                                              'showtime' : _timeController.text,
                                                             }).then((_) {
                                                               ScaffoldMessenger.of(context).showSnackBar(
                                                                 SnackBar(
