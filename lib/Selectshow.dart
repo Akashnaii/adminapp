@@ -148,7 +148,8 @@ class _MovieListPageState extends State<MovieListPage> {
           'Cast': castList,
           'rating': rating,
           'location': locationController.text,
-          'date': dateController.text,
+          'selectedDate': dateController.text,
+          'showtime' : _timeController.text,
         });
 
 
@@ -641,6 +642,14 @@ class _MovieListPageState extends State<MovieListPage> {
                                                 TextEditingController(
                                                     text: movieData[
                                                     'location']);
+                                                var dateController =
+                                                TextEditingController(
+                                                    text: movieData[
+                                                    'selectedDate']);
+                                                var _timeController =
+                                                TextEditingController(
+                                                    text: movieData[
+                                                    'showtime']);
 
                                                 return AlertDialog(
                                                   scrollable: true,
@@ -723,9 +732,8 @@ class _MovieListPageState extends State<MovieListPage> {
                                                               print(
                                                                   formattedDate); //formatted date output using intl package =>  2021-03-16
                                                               setState(() {
-                                                                dateController
-                                                                    .text =
-                                                                    formattedDate; //set output date to TextField value.
+                                                                dateController =
+                                                                    formattedDate as TextEditingController; //set output date to TextField value.
                                                               });
                                                             } else {}
                                                           },
