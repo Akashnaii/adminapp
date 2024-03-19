@@ -88,14 +88,12 @@ class _MovieListPageState extends State<MovieListPage> {
       await storageReference.putFile(newImage);
 
       final String imageUrl = await storageReference.getDownloadURL();
-      double rating = double.tryParse(ratingController.text) ?? 0.0;
       if(select == 'movies') {
         await FirebaseFirestore.instance
             .collection('movies')
             .doc(movieId)
             .update({
           'image_url': imageUrl,
-          'rating': rating,
         });
       }
       if(select == 'Concert') {
@@ -104,7 +102,6 @@ class _MovieListPageState extends State<MovieListPage> {
             .doc(movieId)
             .update({
           'image_url': imageUrl,
-          'rating': rating,
         });
       }if(select == 'Standup commedy') {
         await FirebaseFirestore.instance
@@ -112,7 +109,6 @@ class _MovieListPageState extends State<MovieListPage> {
             .doc(movieId)
             .update({
           'image_url': imageUrl,
-          'rating': rating,
         });
       }
 
@@ -616,41 +612,43 @@ class _MovieListPageState extends State<MovieListPage> {
                                       IconButton(
                                           onPressed: () {
                                             debugPrint(
-                                                "dropdownvlue: ${dropdownvalue}");
+                                                "dropdownvlue: ${select}");
                                             showDialog(
                                               context: context,
                                               builder: (context) {
-                                                final nameController =
+                                                TextEditingController nameController =
                                                 TextEditingController(
                                                     text:
                                                     movieData['name']);
-                                                final descriptionController =
+                                                TextEditingController descriptionController =
                                                 TextEditingController(
                                                     text: movieData[
                                                     'description']);
-                                                final priceController =
+                                                TextEditingController priceController =
                                                 TextEditingController(
                                                     text: movieData[
                                                     'ticket_price']
                                                         .toString());
-                                                final ratingController =
+                                                TextEditingController ratingController =
                                                 TextEditingController(
                                                     text:
                                                     movieData['rating']
                                                         .toString());
-                                                final locationController =
+                                                TextEditingController locationController =
                                                 TextEditingController(
                                                     text: movieData[
                                                     'location']);
-                                                var dateController =
+                                                TextEditingController dateController =
                                                 TextEditingController(
                                                     text: movieData[
                                                     'selectedDate']);
-                                                var _timeController =
+                                                TextEditingController _timeController =
                                                 TextEditingController(
                                                     text: movieData[
                                                     'showtime']);
-
+                                                // debugPrint("movieData['showtime'] : ${movieData['showtime']}");
+                                                
+                                                // _timeController.text =selectedTime.format(context);
                                                 return AlertDialog(
                                                   scrollable: true,
                                                   title: const Text(
@@ -704,36 +702,18 @@ class _MovieListPageState extends State<MovieListPage> {
                                                         child: TextField(
                                                           onTap: () async {
                                                             DateTime?
-                                                            pickedDate =
-                                                            await showDatePicker(
-                                                                context:
-                                                                context,
-                                                                initialDate:
-                                                                DateTime
-                                                                    .now(),
-                                                                firstDate:
-                                                                DateTime(
-                                                                    1950),
+                                                            pickedDate = await showDatePicker(context: context,
+                                                                initialDate: DateTime.now(),
+                                                                firstDate: DateTime(2024, 1, 1),
                                                                 //DateTime.now() - not to allow to choose before today.
-                                                                lastDate:
-                                                                DateTime(
-                                                                    2100));
+                                                                lastDate: DateTime(2024, 12, 31));
 
-                                                            if (pickedDate !=
-                                                                null) {
-                                                              print(
-                                                                  pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
-                                                              String
-                                                              formattedDate =
-                                                              DateFormat(
-                                                                  'yyyy-MM-dd')
-                                                                  .format(
-                                                                  pickedDate);
-                                                              print(
-                                                                  formattedDate); //formatted date output using intl package =>  2021-03-16
+                                                            if (pickedDate != null) {
+                                                              print(pickedDate); //pickedDate output format => 2021-03-10 00:00:00.000
+                                                              String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                                                              print(formattedDate); //formatted date output using intl package =>  2021-03-16
                                                               setState(() {
-                                                                dateController =
-                                                                    formattedDate as TextEditingController; //set output date to TextField value.
+                                                                dateController.text = formattedDate; //set output date to TextField value.
                                                               });
                                                             } else {}
                                                           },
@@ -754,9 +734,10 @@ class _MovieListPageState extends State<MovieListPage> {
                                                         child: TextFormField(
                                                           controller:
                                                           _timeController,
+
                                                           onTap: () =>
                                                               _selectTime(
-                                                                  context),
+                                                                  context).then((value) {_timeController.text = selectedTime.format(context);}),
                                                           readOnly: true,
                                                           decoration:
                                                           InputDecoration(
@@ -881,7 +862,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                                                 .black),
                                                       ),
                                                       onPressed: () {
-                                                        debugPrint("select : ${select}");
+                                                        debugPrint("movieData['showtime'] : ${movieData['showtime']}");
                                                         FirebaseFirestore
                                                             .instance
                                                             .collection(select
