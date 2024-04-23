@@ -330,6 +330,8 @@ class _MovieListPageState extends State<MovieListPage> {
                                   visible: dropdownvalue == "Concert" ||
                                       dropdownvalue == "Standup commedy",
                                   child: TextFormField(
+                                    minLines: 1,
+                                    maxLines: 4,
                                     controller: locationController,
                                     decoration: const InputDecoration(
                                         labelText: 'Location'),
@@ -579,9 +581,9 @@ class _MovieListPageState extends State<MovieListPage> {
                               movies[index].data() as Map<String, dynamic>?;
 
                               if (movieData == null) {
-                                return const ListTile(
-                                  title: Text("Invalid Movie Data"),
-                                  subtitle: Text("Movie data is missing."),
+                                return  ListTile(
+                                  title: Text("Invalid $select Data"),
+                                  subtitle: Text("$select data is missing."),
                                 );
                               }
                               // String rating = movieData['rating']?.toString() ?? 'N/A';
@@ -651,8 +653,8 @@ class _MovieListPageState extends State<MovieListPage> {
                                                 // _timeController.text =selectedTime.format(context);
                                                 return AlertDialog(
                                                   scrollable: true,
-                                                  title: const Text(
-                                                    'Edit Movie',
+                                                  title:  Text(
+                                                    'Edit $select',
                                                     style: TextStyle(
                                                         fontWeight:
                                                         FontWeight.bold),
@@ -666,9 +668,9 @@ class _MovieListPageState extends State<MovieListPage> {
                                                         controller:
                                                         nameController,
                                                         decoration:
-                                                        const InputDecoration(
+                                                         InputDecoration(
                                                             labelText:
-                                                            'Movie Name'),
+                                                            '$select Name'),
                                                       ),
                                                       TextFormField(
                                                         minLines: 1,
@@ -686,6 +688,8 @@ class _MovieListPageState extends State<MovieListPage> {
                                                             select ==
                                                                 'Standup commedy',
                                                         child: TextFormField(
+                                                          minLines: 1,
+                                                          maxLines: 4,
                                                           controller:
                                                           locationController,
                                                           decoration:

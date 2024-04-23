@@ -98,7 +98,7 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
           title: Text('Enter Cast Name'),
           content: TextField(
             controller: nameController,
-            decoration: InputDecoration(labelText: 'Cast   Name'),
+            decoration: InputDecoration(labelText: 'Cast Name'),
           ),
           actions: [
             ElevatedButton(
@@ -315,7 +315,11 @@ class _MyImagePickerScreenState extends State<MyImagePickerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cast'),
+        backgroundColor: Colors.black,
+        title: Text('Cast' , style: TextStyle( fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+            fontSize: 25),),
+        centerTitle: true,
       ),
       body:isLoading? Center(child: CircularProgressIndicator())
           : Column(
