@@ -42,7 +42,7 @@ class _MovieListPageState extends State<MovieListPage> {
       setState(() {
         selectedTime = pickedTime;
         _timeController.text = selectedTime.format(context);
-        debugPrint("_timeController.text:${selectedTime.format(context)}");
+        // debugPrint("_timeController.text:${selectedTime.format(context)}");
       });
     }
   }
@@ -275,7 +275,7 @@ class _MovieListPageState extends State<MovieListPage> {
                                     value: dropdownvalue,
                                     icon: const Icon(Icons.arrow_drop_down),
                                     style: const TextStyle(color: Colors.black),
-                                    decoration: InputDecoration(
+                                    decoration:  InputDecoration(
                                       contentPadding: EdgeInsets.symmetric(
                                           horizontal: 16.0, vertical: 10.0),
                                       border: InputBorder
